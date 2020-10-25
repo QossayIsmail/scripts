@@ -1,0 +1,41 @@
+##This Script is working to do local/remote backups and it takes into consideration several of troubleshooting codes to check before remote backup
+##Remote backup is done using netcat tool.
+
+##------------------------------------------------------##
+
+#INSTALL netcat tool
+apt-get install netcat-openbsd 
+
+#lOCAL BACKUP 
+BACKUPTIME=`date +%b-%d-%y-%T` #get current time
+DESTINATION=/home/qusayismail/Documents/backupf/backup-$BACKUPTIME.tar.gz 
+SOURCFOLDER=/home/qusayismail/Desktop/Files
+tar -cPzf $DESTINATION $SOURCFOLDER  
+logger "Back up Locally was done Successfully at $BACKUPTIME"
+
+
+
+
+#REMOTE BACKUP
+
+#Troubleshooting (Cable and Connectivity)
+network=` ifconfig ens33   | grep UP `
+ ping=`ping 10.0.0.11 -c 3  | grep  "0 received"`
+flag="T";
+if [ "$network" == "" ];
+then 
+flag="Error ! , Cable is UnPlugged or Network Adapter is Disabled ! " 
+elif [ "$ping" != "" ];
+then 
+flag="Error ! , Mismatch IP's > Check your ip or remote Pc ip ! " 
+fi
+BACKUPTIME1=`date +%b-%d-%y-%T` #get current time
+if [ "$flag" == "T" ];
+then 
+nc 10.0.0.11 5555 < /home/qusayismail/Documents/backupf/backup-$BACKUPTIME.tar.gz 
+logger "Back up Remotely was done Successfully at $BACKUPTIME1"
+else
+logger "Backup Remotly wasn't done Successfully at $BACKUPTIME1 $flag "
+fi
+
+#Finish
